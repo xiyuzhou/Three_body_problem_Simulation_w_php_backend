@@ -18,10 +18,21 @@ public class CustomDataHandler : MonoBehaviour
     public TMP_InputField Size;
     public TMP_InputField duration;
 
+    public TextMeshProUGUI DebugText;
+    public TextMeshProUGUI displayText;
+
     public GameObject itemListParent;
     public List<GameObject> currentButtonAssets;
     public CustomDataInfo currentSelection;
     public void ConvertToJson()
+    {
+        DataObject myData = GetCurrentData();
+       
+        string json = JsonUtility.ToJson(myData);
+
+        StartCoroutine(WebRequests.SetCustomData(UserInfo.instance.UserID, DatasetName.text, json, showDebugText));
+    }
+    public DataObject GetCurrentData()
     {
         DataObject myData = new DataObject();
         myData.name = DatasetName.text;
@@ -35,25 +46,41 @@ public class CustomDataHandler : MonoBehaviour
         myData.TimeStep = float.Parse(TimeStep.text);
         myData.Size = float.Parse(Size.text);
         myData.duration = float.Parse(duration.text);
-        string json = JsonUtility.ToJson(myData);
-        StartCoroutine(WebRequests.SetCustomData("1", DatasetName.text, json));//UserInfo.instance.UserID
+        return myData;
     }
-    private void Start()
+    public void Reset()
     {
-        
+        for (int i = 0; i < 7; i++)
+        {
+            star1Info[i].text = i == 0 ? "1" : "0";
+            star2Info[i].text = i == 0 ? "1" : "0";
+            star3Info[i].text = i == 0 ? "1" : "0";
+        }
+        GravitationalConst.text = "5";
+        TimeStep.text = "1";
+        Size.text = "1";
+        duration.text = "5";
+        showDebugText("reset to default");
     }
-    public void SaveInfo()
+    private void showDebugText(string log)
     {
-        
+        StartCoroutine(showDebugTextRoutine(log));
+    }
+    IEnumerator showDebugTextRoutine(string debugLog)
+    {
+        DebugText.text = debugLog;
+        yield return new WaitForSeconds(3);
+        if (DebugText.text == debugLog)
+            DebugText.text = "";
+
     }
     public void getID()
     {
         Action<string> getDataId = (IDs) =>
         {
-            Debug.Log(IDs);
             StartCoroutine(createItemsRoutine(IDs));
         };
-        StartCoroutine(WebRequests.GetCustomDataIDs("1", getDataId));
+        StartCoroutine(WebRequests.GetCustomDataIDs(UserInfo.instance.UserID, getDataId));
     }
     IEnumerator createItemsRoutine(string jsonArrayString)
     {
@@ -77,7 +104,7 @@ public class CustomDataHandler : MonoBehaviour
             DataObject data1 = new DataObject();
             Action<string> getDataInfo = (dataInfo) =>
             {
-                Debug.Log(dataInfo);
+                //Debug.Log(dataInfo);
                 isDone = true;
                 data1 = JsonUtility.FromJson<DataObject>(dataInfo);
             };
@@ -95,8 +122,44 @@ public class CustomDataHandler : MonoBehaviour
             assetButton.GetComponent<Button>().onClick.AddListener(() =>
             {
                 currentSelection = DataAsset;
+                displayText.text = DataAsset.data.name;
             });
         }
         yield return null;
+    }
+
+    public void LoadSelection()
+    {
+        if (currentSelection == null)
+            return;
+        DataObject myData = currentSelection.data;
+        DatasetName.text = myData.name;
+        for (int i = 0; i < 7; i++)
+        {
+            star1Info[i].text = myData.star1Info[i].ToString();
+            star2Info[i].text = myData.star2Info[i].ToString();
+            star3Info[i].text = myData.star3Info[i].ToString();
+        }
+        GravitationalConst.text = myData.GravitationalConst.ToString();
+        TimeStep.text = myData.TimeStep.ToString();
+        Size.text = myData.Size.ToString();
+        duration.text = myData.duration.ToString();
+        showDebugText(myData.name + " loaded");
+    }
+    public void DeleteSelection()
+    {
+        if (currentSelection == null) return;
+
+        Action<string> DeleteItemCallback = (message) =>
+        {
+            showDebugText(message);
+            if (!message.StartsWith("Error"))
+            {
+                currentButtonAssets.Remove(currentSelection.gameObject);
+                Destroy(currentSelection.gameObject);
+                currentSelection = null;
+            }
+        };
+        StartCoroutine(WebRequests.DeleteCustomData(currentSelection.id, DeleteItemCallback));
     }
 }

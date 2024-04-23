@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using TMPro;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 public class LoginRegister : MonoBehaviour
 {
@@ -23,9 +24,8 @@ public class LoginRegister : MonoBehaviour
 
     public MenuInteraction menuInteraction;
 
-    public GameObject LoginRegisterPage;
-    public GameObject UserProfilePage;
-
+    public CustomDataHandler handler;
+    public Button[] buttons;
     void Awake()
     {
         instance = this;
@@ -74,8 +74,12 @@ public class LoginRegister : MonoBehaviour
         {
             SetDisplayText(displayText, response.message, Color.green);
             Debug.Log(response.message);
-            LoginRegisterPage.SetActive(false);
-            UserProfilePage.SetActive(true);
+            onLoggedIn.Invoke();
+            foreach (Button button in buttons)
+            {
+                button.interactable = true;
+            }
+            handler.getID();
         }
         else
         {

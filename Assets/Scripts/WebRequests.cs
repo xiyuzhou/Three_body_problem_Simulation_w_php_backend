@@ -60,7 +60,7 @@ public class WebRequests : MonoBehaviour
             }
         }
     }
-    public static IEnumerator SetCustomData(string userID, string dataName, string jsonData)
+    public static IEnumerator SetCustomData(string userID, string dataName, string jsonData, Action<String> callback)
     {
         WWWForm form = new WWWForm();
         form.AddField("userID", userID);
@@ -73,11 +73,11 @@ public class WebRequests : MonoBehaviour
 
             if (www.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogWarning(www.downloadHandler.text);
+                callback(www.error);
             }
             else
             {
-                Debug.LogWarning(www.downloadHandler.text);
+                callback(www.downloadHandler.text);
             }
         }
     }
@@ -120,6 +120,25 @@ public class WebRequests : MonoBehaviour
                 //ApiResponse response = JsonUtility.FromJson<ApiResponse>(www.downloadHandler.text);
                 string response = www.downloadHandler.text;
                 callback(response);
+            }
+        }
+    }
+    public static IEnumerator DeleteCustomData(string id, Action<String> callback)
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("id", id);
+
+        using (UnityWebRequest www = UnityWebRequest.Post(url + "DeleteCustomData.php", form))
+        {
+            yield return www.SendWebRequest();
+
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                callback(www.error);
+            }
+            else
+            {
+                callback(www.downloadHandler.text);
             }
         }
     }
