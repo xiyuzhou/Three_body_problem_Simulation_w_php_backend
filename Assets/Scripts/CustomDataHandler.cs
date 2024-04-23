@@ -61,6 +61,7 @@ public class CustomDataHandler : MonoBehaviour
         Size.text = "1";
         duration.text = "5";
         showDebugText("reset to default");
+        CameraController.instance.OnStart();
     }
     private void showDebugText(string log)
     {

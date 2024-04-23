@@ -10,7 +10,7 @@ public class SliderText : MonoBehaviour
     [SerializeField] private Slider slider;
     public void OnChange()
     {
-        text.text = slider.value.ToString("F2");
+        text.text = slider.value.ToString("F1");
     }
     private void Awake()
     {

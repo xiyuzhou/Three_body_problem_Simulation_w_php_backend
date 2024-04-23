@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class CameraController : MonoBehaviour
@@ -15,9 +16,13 @@ public class CameraController : MonoBehaviour
     public Camera cam;
     private TargetContainer focusObject;
     private Vector3 velocity;
+    private Vector3 refOffsetSpeed;
     private Vector3 centerMass;
     private float size;
     public static CameraController instance;
+    public float mouseSensitivity = 3.5f;
+
+    private Vector3 CamOffset;
     private void Start()
     {
         instance = this;
@@ -59,6 +64,15 @@ public class CameraController : MonoBehaviour
         CheckWithinRange();
         Move();
         Zoom();
+        if (Input.GetMouseButton(1))
+        {
+            float x = Input.GetAxis("Mouse X");
+            float y = -Input.GetAxis("Mouse Y");
+            camParent.RotateAround(camParent.position, camParent.up, x * mouseSensitivity);
+
+            camParent.RotateAround(camParent.position, camParent.right, y * mouseSensitivity);
+
+        }
     }
 
     private void Move()
@@ -74,6 +88,7 @@ public class CameraController : MonoBehaviour
             newPos = targetsInfo[switchCamState-1].transform.position;
         }
         camParent.position = Vector3.SmoothDamp(camParent.position, newPos, ref velocity, smoothTime);
+        cam.transform.localPosition = Vector3.SmoothDamp(cam.transform.localPosition, CamOffset, ref refOffsetSpeed, 0.5f);
     }
 
     private void Zoom()
@@ -123,10 +138,17 @@ public class CameraController : MonoBehaviour
 
     private void CheckWithinRange()
     {
+        bool allIn = false;
         foreach (TargetContainer tar in targetsInfo)
         {
             tar.inRange = Vector3.Distance(centerMass, tar.transform.position) < distanceThreshold;
+            allIn = tar.inRange;
         }
+        if (!allIn)
+        {
+            focusObject.inRange = true;
+        }
+
     }
 
     private void CalculateCenterOfMass()
@@ -151,6 +173,10 @@ public class CameraController : MonoBehaviour
         {
             Debug.LogWarning("Total mass of targets within range is zero. Center of mass calculation skipped.");
         }
+    }
+    public void OffsetCamera(Vector3 offset)
+    {
+        CamOffset = offset;
     }
 }
 
