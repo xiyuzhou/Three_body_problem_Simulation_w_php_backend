@@ -1,19 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class CameraController : MonoBehaviour
 {
-    public List<GameObject> targets;
-    public List<TargetContainer> targetsInfo;
+    public StarTargetContainer[] targets;
     public int switchCamState = 0; //(zero means auto)
     public float distanceThreshold = 50;
     public float smoothTime = 0.5f;
     public float cameraWeight = 0.5f;
     public Transform camParent;
     public Camera cam;
-    private TargetContainer focusObject;
+    private StarTargetContainer focusObject;
     private Vector3 velocity;
     private Vector3 refOffsetSpeed;
     private Vector3 centerMass;
@@ -34,46 +34,24 @@ public class CameraController : MonoBehaviour
     } 
     public void OnStart()
     {
-        if (targets == null || targets.Count == 0)
-        {
-            Debug.LogError("No targets assigned to CameraController.");
-            return;
-        }
-
-        targetsInfo = new List<TargetContainer>();
-
-        foreach (GameObject target in targets)
-        {
-            Rigidbody targetRigidbody = target.GetComponent<Rigidbody>();
-            if (targetRigidbody != null)
-            {
-                TargetContainer info = new TargetContainer();
-                info.transform = target.transform;
-                info.mass = targetRigidbody.mass;
-                info.inRange = true;
-                targetsInfo.Add(info);
-            }
-            else
-            {
-                Debug.LogError("Target " + target.name + " does not have a Rigidbody.");
-            }
-        }
-
-        focusObject = FindMaxMassTarget();
+        FindMaxMassTarget();
     }
-
     private void LateUpdate()
     {
         CalculateCenterOfMass();
         CheckWithinRange();
         Move();
         Zoom();
+        handleCameraRotation();
+    }
+    private void handleCameraRotation()
+    {
         if (Input.GetMouseButton(1))
         {
             float x = Input.GetAxis("Mouse X");
-            CamX = (CamX + x)/2;
+            CamX = (CamX + x) / 2;
             float y = -Input.GetAxis("Mouse Y");
-            CamY = (CamY + y)/2;
+            CamY = (CamY + y) / 2;
             camParent.RotateAround(camParent.position, camParent.up, x * mouseSensitivity);
             camParent.RotateAround(camParent.position, camParent.right, y * mouseSensitivity);
         }
@@ -82,7 +60,7 @@ public class CameraController : MonoBehaviour
             if (CamX != 0)
             {
                 CamX = Mathf.SmoothDamp(CamX, 0, ref refX, 0.5f);
-                camParent.RotateAround(camParent.position, camParent.up, CamX * mouseSensitivity) ;
+                camParent.RotateAround(camParent.position, camParent.up, CamX * mouseSensitivity);
             }
             if (CamY != 0)
             {
@@ -91,7 +69,6 @@ public class CameraController : MonoBehaviour
             }
         }
     }
-
     private void Move()
     {
         Vector3 newPos = new Vector3();
@@ -102,7 +79,7 @@ public class CameraController : MonoBehaviour
         }
         else
         {
-            newPos = targetsInfo[switchCamState-1].transform.position;
+            newPos = targets[switchCamState-1].transform.position;
         }
         camParent.position = Vector3.SmoothDamp(camParent.position, newPos, ref velocity, smoothTime);
         cam.transform.localPosition = Vector3.SmoothDamp(cam.transform.localPosition, CamOffset, ref refOffsetSpeed, 0.5f);
@@ -121,10 +98,11 @@ public class CameraController : MonoBehaviour
 
     private Vector3 GetCenterPoint()
     {
-        var bounds = new Bounds(focusObject.transform.position, Vector3.zero);
-        foreach (TargetContainer tar in targetsInfo)
+        var firstValidTarget = targets.FirstOrDefault(tar => tar.inRange && tar.onTarget);
+        var bounds = new Bounds(firstValidTarget.transform.position, Vector3.zero);
+        foreach (StarTargetContainer tar in targets)
         {
-            if (tar.inRange)
+            if (tar.inRange && tar.onTarget)
             {
                 bounds.Encapsulate(tar.transform.position);
             }
@@ -133,19 +111,17 @@ public class CameraController : MonoBehaviour
         return bounds.center;
     }
 
-    private TargetContainer FindMaxMassTarget()
+    public void FindMaxMassTarget()
     {
-        TargetContainer maxMassTarget = null;
         float maxMass = 0;
-        foreach (TargetContainer targetInfo in targetsInfo)
+        foreach (StarTargetContainer targetInfo in targets)
         {
-            if (targetInfo.inRange && targetInfo.mass > maxMass)
+            if (targetInfo.rigid.mass > maxMass)
             {
-                maxMass = targetInfo.mass;
-                maxMassTarget = targetInfo;
+                maxMass = targetInfo.rigid.mass;
+                focusObject = targetInfo;
             }
         }
-        return maxMassTarget;
     }
 
     public void SetCamState(int state)
@@ -156,8 +132,14 @@ public class CameraController : MonoBehaviour
     private void CheckWithinRange()
     {
         bool allIn = false;
-        foreach (TargetContainer tar in targetsInfo)
+        foreach (StarTargetContainer tar in targets)
         {
+            if (!tar.onTarget)
+            {
+                allIn = false;
+                tar.inRange = false;
+                continue;
+            }
             tar.inRange = Vector3.Distance(centerMass, tar.transform.position) < distanceThreshold;
             allIn = tar.inRange;
         }
@@ -173,12 +155,12 @@ public class CameraController : MonoBehaviour
         Vector3 sumOfPositions = Vector3.zero;
         float totalMass = 0f;
 
-        foreach (TargetContainer tar in targetsInfo)
+        foreach (StarTargetContainer tar in targets)
         {
-            if (tar.inRange)
+            if (tar.inRange && tar.onTarget)
             {
-                sumOfPositions += tar.transform.position * tar.mass;
-                totalMass += tar.mass;
+                sumOfPositions += tar.transform.position * tar.rigid.mass;
+                totalMass += tar.rigid.mass;
             }
         }
 
@@ -195,12 +177,4 @@ public class CameraController : MonoBehaviour
     {
         CamOffset = offset;
     }
-}
-
-[Serializable]
-public class TargetContainer
-{
-    public Transform transform;
-    public float mass;
-    public bool inRange;
 }

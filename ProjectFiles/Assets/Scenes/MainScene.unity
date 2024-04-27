@@ -731,7 +731,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &28586156
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3627,9 +3627,9 @@ GameObject:
   - component: {fileID: 219837066}
   - component: {fileID: 219837065}
   - component: {fileID: 219837064}
-  - component: {fileID: 219837063}
   - component: {fileID: 219837062}
   - component: {fileID: 219837067}
+  - component: {fileID: 219837068}
   m_Layer: 0
   m_Name: Rigid3
   m_TagString: Bodies
@@ -3664,27 +3664,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!135 &219837063
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 219837061}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 3
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &219837064
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3917,6 +3896,22 @@ TrailRenderer:
   m_Autodestruct: 0
   m_Emitting: 1
   m_ApplyActiveColorSpace: 1
+--- !u!114 &219837068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 219837061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f7885b566d5ec244a9639a0c7615680, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rigid: {fileID: 0}
+  targetPos: {fileID: 0}
+  onTarget: 1
+  inRange: 1
 --- !u!1 &222038817
 GameObject:
   m_ObjectHideFlags: 0
@@ -5610,10 +5605,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targets:
-  - {fileID: 1385514519}
-  - {fileID: 1733002880}
-  - {fileID: 219837061}
-  targetsInfo: []
+  - {fileID: 1385514526}
+  - {fileID: 1733002887}
+  - {fileID: 219837068}
   switchCamState: 0
   distanceThreshold: 50
   smoothTime: 0
@@ -5621,7 +5615,7 @@ MonoBehaviour:
   camParent: {fileID: 356228253}
   cam: {fileID: 963194227}
   mouseSensitivity: 3
-  camOffest: {fileID: 0}
+  camOffest: {fileID: 265184598}
 --- !u!1 &370115545
 GameObject:
   m_ObjectHideFlags: 0
@@ -12121,9 +12115,9 @@ RectTransform:
   - {fileID: 1948528304}
   m_Father: {fileID: 1840556812}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 57.423565, y: -37.325615}
   m_SizeDelta: {x: 137.52, y: 37.3256}
   m_Pivot: {x: 0.41756517, y: -0.00000037560585}
 --- !u!114 &729094157
@@ -12587,9 +12581,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   starObjects:
-  - {fileID: 1385514519}
-  - {fileID: 1733002880}
-  - {fileID: 219837061}
+  - {fileID: 1385514526}
+  - {fileID: 1733002887}
+  - {fileID: 219837068}
   gravitationalConstant: 10
   customDataHandler: {fileID: 144292022}
   running: 0
@@ -12599,7 +12593,6 @@ MonoBehaviour:
   - 0
   - 0
   - 0
-  totalMomentum: {x: 0, y: 0, z: 0}
 --- !u!4 &765707586
 Transform:
   m_ObjectHideFlags: 0
@@ -21093,9 +21086,9 @@ GameObject:
   - component: {fileID: 1385514524}
   - component: {fileID: 1385514523}
   - component: {fileID: 1385514522}
-  - component: {fileID: 1385514521}
   - component: {fileID: 1385514520}
   - component: {fileID: 1385514525}
+  - component: {fileID: 1385514526}
   m_Layer: 0
   m_Name: Rigid1
   m_TagString: Bodies
@@ -21130,27 +21123,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!135 &1385514521
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1385514519}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 3
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &1385514522
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -21392,6 +21364,22 @@ TrailRenderer:
   m_Autodestruct: 0
   m_Emitting: 1
   m_ApplyActiveColorSpace: 1
+--- !u!114 &1385514526
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1385514519}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f7885b566d5ec244a9639a0c7615680, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rigid: {fileID: 0}
+  targetPos: {fileID: 0}
+  onTarget: 1
+  inRange: 1
 --- !u!1 &1396665236
 GameObject:
   m_ObjectHideFlags: 0
@@ -24637,9 +24625,9 @@ RectTransform:
   - {fileID: 682906298}
   m_Father: {fileID: 1840556812}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 57.423565, y: -111.976814}
   m_SizeDelta: {x: 137.52, y: 37.3256}
   m_Pivot: {x: 0.41756517, y: -0.00000037560585}
 --- !u!114 &1635637268
@@ -25658,9 +25646,9 @@ GameObject:
   - component: {fileID: 1733002885}
   - component: {fileID: 1733002884}
   - component: {fileID: 1733002883}
-  - component: {fileID: 1733002882}
   - component: {fileID: 1733002881}
   - component: {fileID: 1733002886}
+  - component: {fileID: 1733002887}
   m_Layer: 0
   m_Name: Rigid2
   m_TagString: Bodies
@@ -25695,27 +25683,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!135 &1733002882
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1733002880}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 3
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &1733002883
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -25957,6 +25924,22 @@ TrailRenderer:
   m_Autodestruct: 0
   m_Emitting: 1
   m_ApplyActiveColorSpace: 1
+--- !u!114 &1733002887
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1733002880}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f7885b566d5ec244a9639a0c7615680, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rigid: {fileID: 0}
+  targetPos: {fileID: 0}
+  onTarget: 1
+  inRange: 1
 --- !u!1 &1744874080
 GameObject:
   m_ObjectHideFlags: 0
@@ -30933,9 +30916,9 @@ RectTransform:
   - {fileID: 1118479566}
   m_Father: {fileID: 1840556812}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 57.423565, y: -74.651215}
   m_SizeDelta: {x: 137.52, y: 37.3256}
   m_Pivot: {x: 0.41756517, y: -0.00000037560585}
 --- !u!114 &2101268915

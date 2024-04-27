@@ -3,41 +3,40 @@ using UnityEngine;
 
 public class SimulationController : MonoBehaviour
 {
-    public GameObject[] starObjects;
-    private List<Rigidbody> bodies = new List<Rigidbody>();
+    public StarTargetContainer[] starObjects;
+    //private List<Rigidbody> bodies = new List<Rigidbody>();
     public float gravitationalConstant = 6.67430e-11f; // Gravitational constant (m^3/kg/s^2)
     [SerializeField] private CustomDataHandler customDataHandler;
     public bool running = false;
     public float gravitationalPotential = 0;
     public float collisionFactor;
     public float[] lastPotential = new float[3];
-    public Vector3 totalMomentum = Vector3.zero;
     public void OnStartSimulation()
     {
         OnResetSimulation();
         DataObject data = customDataHandler.GetCurrentData();
-        foreach (var item in bodies)
+        foreach (var item in starObjects)
         {
-            item.isKinematic = false;
+            item.rigid.isKinematic = false;
         }
         var star1 = data.star1Info;
-        bodies[0].mass = star1[0];
-        bodies[0].position = new Vector3(star1[1], star1[2], star1[3]);
-        bodies[0].velocity = new Vector3(star1[4], star1[5], star1[6]);
+        starObjects[0].rigid.mass = star1[0];
+        starObjects[0].rigid.position = new Vector3(star1[1], star1[2], star1[3]);
+        starObjects[0].rigid.velocity = new Vector3(star1[4], star1[5], star1[6]);
         var star2 = data.star2Info;
-        bodies[1].mass = star2[0];
-        bodies[1].position = new Vector3(star2[1], star2[2], star2[3]);
-        bodies[1].velocity = new Vector3(star2[4], star2[5], star2[6]);
+        starObjects[1].rigid.mass = star2[0];
+        starObjects[1].rigid.position = new Vector3(star2[1], star2[2], star2[3]);
+        starObjects[1].rigid.velocity = new Vector3(star2[4], star2[5], star2[6]);
         var star3 = data.star3Info;
-        bodies[2].mass = star3[0];
-        bodies[2].position = new Vector3(star3[1], star3[2], star3[3]);
-        bodies[2].velocity = new Vector3(star3[4], star3[5], star3[6]);
+        starObjects[2].rigid.mass = star3[0];
+        starObjects[2].rigid.position = new Vector3(star3[1], star3[2], star3[3]);
+        starObjects[2].rigid.velocity = new Vector3(star3[4], star3[5], star3[6]);
 
         for (int i = 0; i < starObjects.Length; i++)
         {
-            float a = bodies[i].mass > 1 ? Mathf.Pow(bodies[i].mass, 1f / 3f) : 1;
+            float a = starObjects[i].rigid.mass > 1 ? Mathf.Pow(starObjects[i].rigid.mass, 1f / 3f) : 1;
             a = a * data.Size;
-            starObjects[i].transform.localScale = new Vector3(a, a, a);
+            starObjects[i].targetPos.localScale = new Vector3(a, a, a);
 
             var trail = starObjects[i].GetComponent<TrailRenderer>();
             trail.emitting = true;
@@ -49,25 +48,17 @@ public class SimulationController : MonoBehaviour
 
         gravitationalConstant = data.GravitationalConst;
         running = true;
-        foreach (var b in bodies)
-        {
-            totalMomentum += b.mass * b.velocity;
-        }
     }
     public void OnResetSimulation()
     {
-        bodies.Clear();
-        for (int i = 0; i < starObjects.Length; i++)
+        foreach (var obj in starObjects)
         {
-            bodies.Add(starObjects[i].GetComponent<Rigidbody>());
-            starObjects[i].SetActive(true);
-        }
-
-        for (int i = 0; i < starObjects.Length; i++)
-        {
-            bodies[i].isKinematic = true;
-            starObjects[i].GetComponent<TrailRenderer>().Clear();
-            starObjects[i].GetComponent<TrailRenderer>().emitting = false;
+            obj.gameObject.SetActive(true);
+            obj.inRange = true;
+            obj.onTarget = true;
+            obj.rigid.isKinematic = true;
+            obj.gameObject.GetComponent<TrailRenderer>().Clear();
+            obj.gameObject.GetComponent<TrailRenderer>().emitting = false;
         }
         setDataDefault();
         running = false;
@@ -82,16 +73,16 @@ public class SimulationController : MonoBehaviour
     private void setDataDefault()
     {
         DataObject data = customDataHandler.GetCurrentData();
-        bodies[0].mass = data.star1Info[0];
+        starObjects[0].rigid.mass = data.star1Info[0];
         starObjects[0].transform.position = new Vector3(data.star1Info[1], data.star1Info[2], data.star1Info[3]);
-        bodies[1].mass = data.star2Info[0];
+        starObjects[1].rigid.mass = data.star2Info[0];
         starObjects[1].transform.position = new Vector3(data.star2Info[1], data.star2Info[2], data.star2Info[3]);
-        bodies[2].mass = data.star3Info[0];
+        starObjects[2].rigid.mass = data.star3Info[0];
         starObjects[2].transform.position = new Vector3(data.star3Info[1], data.star3Info[2], data.star3Info[3]);
 
         for (int i = 0; i < starObjects.Length; i++)
         {
-            float a = bodies[i].mass > 1 ? Mathf.Pow(bodies[i].mass, 1f / 3f) : 1;
+            float a = starObjects[i].rigid.mass > 1 ? Mathf.Pow(starObjects[i].rigid.mass, 1f / 3f) : 1;
             a = a * data.Size;
             starObjects[i].transform.localScale = new Vector3(a, a, a);
         }
@@ -107,13 +98,16 @@ public class SimulationController : MonoBehaviour
         {
             //float softeningFactor = 0.2f;
             gravitationalPotential = 0;
-            for (int i = 0; i < bodies.Count; i++)
+            for (int i = 0; i < starObjects.Length; i++)
             {
-                for (int j = i + 1; j < bodies.Count; j++)
+                if (!starObjects[i].onTarget)
+                    continue;
+                for (int j = i + 1; j < starObjects.Length; j++)
                 {
-
+                    if (!starObjects[j].onTarget)
+                        continue;
                     // Calculate the vector from body i to body j
-                    Vector3 direction = bodies[j].position - bodies[i].position;
+                    Vector3 direction = starObjects[j].rigid.position - starObjects[i].rigid.position;
                     float distance = direction.magnitude;
                     direction.Normalize();
 
@@ -122,27 +116,26 @@ public class SimulationController : MonoBehaviour
                         //distance = Mathf.Max(distance, softeningFactor);
                         if (distance < 0.1f)// handle collision
                         {
-                            bodies[j].gameObject.SetActive(false);
-                            float newMass = bodies[j].mass + bodies[i].mass;
-                            float a = Mathf.Pow(newMass / bodies[i].mass, 1f / 3f);
-                            Vector3 newVelocity = (bodies[i].velocity * bodies[i].mass + bodies[j].velocity * bodies[j].mass)/newMass;
-                            bodies[i].velocity = newVelocity;
-                            bodies[i].mass = newMass;
+                            starObjects[j].onTarget = false;
+                            starObjects[j].gameObject.SetActive(false);
+                            float newMass = starObjects[j].rigid.mass + starObjects[i].rigid.mass;
+                            float a = Mathf.Pow(newMass / starObjects[i].rigid.mass, 1f / 3f);
+                            Vector3 newVelocity = (starObjects[i].rigid.velocity * starObjects[i].rigid.mass + starObjects[j].rigid.velocity * starObjects[j].rigid.mass)/newMass;
+                            starObjects[i].rigid.velocity = newVelocity;
+                            starObjects[i].rigid.mass = newMass;
                             
                             starObjects[i].transform.localScale *= a;
-
-                            bodies.RemoveAt(j);
                             Debug.Log("Collided");
-                            
+                            CameraController.instance.FindMaxMassTarget();
                             continue;
                         }
-                        float energy = gravitationalConstant * (bodies[i].mass * bodies[j].mass) / distance;
+                        float energy = gravitationalConstant * (starObjects[i].rigid.mass * starObjects[j].rigid.mass) / distance;
                         float forceMagnitude = energy / distance;
                         gravitationalPotential += energy;
                         Vector3 force = direction * forceMagnitude;
 
-                        bodies[i].AddForce(force);
-                        bodies[j].AddForce(-force);
+                        starObjects[i].rigid.AddForce(force);
+                        starObjects[j].rigid.AddForce(-force);
                     }
                 }
             }
