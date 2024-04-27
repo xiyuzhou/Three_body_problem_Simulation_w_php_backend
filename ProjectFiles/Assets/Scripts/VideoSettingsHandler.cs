@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,7 +9,15 @@ public class VideoSettingsHandler : MonoBehaviour
     [SerializeField] private Slider CamDistance;
     [SerializeField] private TMP_InputField distanceMaxValue;
     [SerializeField] private TMP_InputField distanceThreshold;
-
+    [SerializeField] private TextMeshProUGUI timeStepText;
+    public void SetTimeStep(bool k)
+    {
+        float i = k ? 0.2f : -0.2f;
+        float j = Time.timeScale + (k ? 0.2f : -0.2f);
+        j = Mathf.Clamp(j, 0, 3);
+        Time.timeScale = j;
+        timeStepText.text = Time.timeScale.ToString("F1");
+    }
     private void Start()
     {
         SetCamWeight();
@@ -19,6 +25,17 @@ public class VideoSettingsHandler : MonoBehaviour
         SetDistanceThreshold();
         SetDistanceMaxValue();
         SetCameraOffest();
+    }
+    private void LateUpdate()
+    {
+        if (Input.GetAxis("Mouse ScrollWheel") > 0f)
+        {
+            CamDistance.value -=2;
+        }
+        else if (Input.GetAxis("Mouse ScrollWheel") < 0f)
+        {
+            CamDistance.value +=2;
+        }
     }
     public void SetCameraMode(int i)
     {
@@ -46,7 +63,6 @@ public class VideoSettingsHandler : MonoBehaviour
     public void SetCameraOffest()
     {
         Vector3 offset = new Vector3(0, 0, -CamDistance.value);
-        Debug.Log(offset);
         CameraController.instance.OffsetCamera(offset);
     }
 }

@@ -21,6 +21,7 @@ public class WebRequests : MonoBehaviour
 
         using (UnityWebRequest www = UnityWebRequest.Post(url + "Login.php", form))
         {
+            www.timeout = 2;
             yield return www.SendWebRequest();
 
             if (www.result != UnityWebRequest.Result.Success)
@@ -46,6 +47,7 @@ public class WebRequests : MonoBehaviour
 
         using (UnityWebRequest www = UnityWebRequest.Post(url+"RegisterUser.php", form))
         {
+            www.timeout = 2;
             yield return www.SendWebRequest();
 
             if (www.result != UnityWebRequest.Result.Success)
@@ -69,6 +71,7 @@ public class WebRequests : MonoBehaviour
 
         using (UnityWebRequest www = UnityWebRequest.Post(url + "SetCustomData.php", form))
         {
+            www.timeout = 2;
             yield return www.SendWebRequest();
 
             if (www.result != UnityWebRequest.Result.Success)
@@ -89,6 +92,7 @@ public class WebRequests : MonoBehaviour
 
         using (UnityWebRequest www = UnityWebRequest.Post(url + "GetCustomDataID.php", form))
         {
+            www.timeout = 2;
             yield return www.SendWebRequest();
 
             if (www.result != UnityWebRequest.Result.Success)
@@ -109,6 +113,7 @@ public class WebRequests : MonoBehaviour
 
         using (UnityWebRequest www = UnityWebRequest.Post(url + "GetCustomDataset.php", form))
         {
+            www.timeout = 2;
             yield return www.SendWebRequest();
 
             if (www.result != UnityWebRequest.Result.Success)
@@ -130,6 +135,7 @@ public class WebRequests : MonoBehaviour
 
         using (UnityWebRequest www = UnityWebRequest.Post(url + "DeleteCustomData.php", form))
         {
+            www.timeout = 2;
             yield return www.SendWebRequest();
 
             if (www.result != UnityWebRequest.Result.Success)

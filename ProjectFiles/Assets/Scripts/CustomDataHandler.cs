@@ -14,7 +14,6 @@ public class CustomDataHandler : MonoBehaviour
 
     public TMP_InputField DatasetName;
     public TMP_InputField GravitationalConst;
-    public TMP_InputField TimeStep;
     public TMP_InputField Size;
     public TMP_InputField duration;
 
@@ -24,6 +23,7 @@ public class CustomDataHandler : MonoBehaviour
     public GameObject itemListParent;
     public List<GameObject> currentButtonAssets;
     public CustomDataInfo currentSelection;
+    public string[] presets;
     public void ConvertToJson()
     {
         DataObject myData = GetCurrentData();
@@ -43,7 +43,6 @@ public class CustomDataHandler : MonoBehaviour
             myData.star3Info[i] = float.Parse(star3Info[i].text);
         }
         myData.GravitationalConst = float.Parse(GravitationalConst.text);
-        myData.TimeStep = float.Parse(TimeStep.text);
         myData.Size = float.Parse(Size.text);
         myData.duration = float.Parse(duration.text);
         return myData;
@@ -57,7 +56,6 @@ public class CustomDataHandler : MonoBehaviour
             star3Info[i].text = i == 0 ? "1" : "0";
         }
         GravitationalConst.text = "5";
-        TimeStep.text = "1";
         Size.text = "1";
         duration.text = "5";
         showDebugText("reset to default");
@@ -75,11 +73,41 @@ public class CustomDataHandler : MonoBehaviour
             DebugText.text = "";
 
     }
+    
+    public void loadPresets()
+    {
+        foreach (string data in presets) { 
+            
+            DataObject dataObject = new DataObject();
+            dataObject = JsonUtility.FromJson<DataObject>(data);
+
+            GameObject assetButton = Instantiate(Resources.Load("Prefab/DataAssetButton") as GameObject);
+            CustomDataInfo DataAsset = assetButton.AddComponent<CustomDataInfo>();
+            currentButtonAssets.Add(assetButton);
+            DataAsset.id = "preset";
+            assetButton.transform.SetParent(itemListParent.transform, false);
+            DataAsset.data = dataObject;
+            assetButton.transform.Find("ButtonText").GetComponent<TextMeshProUGUI>().text = DataAsset.data.name;
+
+            assetButton.GetComponent<Button>().onClick.AddListener(() =>
+            {
+                currentSelection = DataAsset;
+                displayText.text = DataAsset.data.name;
+            });
+        }
+    }
     public void getID()
     {
         Action<string> getDataId = (IDs) =>
         {
-            StartCoroutine(createItemsRoutine(IDs));
+            if (IDs.StartsWith("Error"))
+            {
+                showDebugText(IDs);
+            }
+            else
+            {
+                StartCoroutine(createItemsRoutine(IDs));
+            }
         };
         StartCoroutine(WebRequests.GetCustomDataIDs(UserInfo.instance.UserID, getDataId));
     }
@@ -90,6 +118,7 @@ public class CustomDataHandler : MonoBehaviour
         JSONArray jsonArray = JSON.Parse(jsonArrayString) as JSONArray;
         for (int i = 0; i < jsonArray.Count; i++)
         {
+            bool isError = false;
             bool isDone = false;
             bool isNew = false;
             string id = jsonArray[i].AsObject["id"];
@@ -105,12 +134,20 @@ public class CustomDataHandler : MonoBehaviour
             DataObject data1 = new DataObject();
             Action<string> getDataInfo = (dataInfo) =>
             {
-                //Debug.Log(dataInfo);
-                isDone = true;
-                data1 = JsonUtility.FromJson<DataObject>(dataInfo);
+                if (!dataInfo.StartsWith("Error")) {
+                    isDone = true;
+                    data1 = JsonUtility.FromJson<DataObject>(dataInfo);
+                }
+                else
+                {
+                    showDebugText(dataInfo);
+                    isError = true;
+                }
             };
             StartCoroutine(WebRequests.GetCustomData(id, getDataInfo));
-            yield return new WaitUntil(() => isDone == true);
+            yield return new WaitUntil(() => isDone || isError);
+            if (isError)
+                yield break;
 
             GameObject assetButton = Instantiate(Resources.Load("Prefab/DataAssetButton") as GameObject);
             CustomDataInfo DataAsset = assetButton.AddComponent<CustomDataInfo>();
@@ -142,15 +179,22 @@ public class CustomDataHandler : MonoBehaviour
             star3Info[i].text = myData.star3Info[i].ToString();
         }
         GravitationalConst.text = myData.GravitationalConst.ToString();
-        TimeStep.text = myData.TimeStep.ToString();
         Size.text = myData.Size.ToString();
         duration.text = myData.duration.ToString();
         showDebugText(myData.name + " loaded");
+
     }
     public void DeleteSelection()
     {
         if (currentSelection == null) return;
 
+        if (currentSelection.id == "preset")
+        {
+            currentButtonAssets.Remove(currentSelection.gameObject);
+            Destroy(currentSelection.gameObject);
+            currentSelection = null;
+            return;
+        }
         Action<string> DeleteItemCallback = (message) =>
         {
             showDebugText(message);
@@ -159,6 +203,10 @@ public class CustomDataHandler : MonoBehaviour
                 currentButtonAssets.Remove(currentSelection.gameObject);
                 Destroy(currentSelection.gameObject);
                 currentSelection = null;
+            }
+            else
+            {
+                showDebugText(message);
             }
         };
         StartCoroutine(WebRequests.DeleteCustomData(currentSelection.id, DeleteItemCallback));

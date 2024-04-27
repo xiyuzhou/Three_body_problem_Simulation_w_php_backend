@@ -1,8 +1,7 @@
-
 using System;
 using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CameraController : MonoBehaviour
 {
@@ -22,7 +21,12 @@ public class CameraController : MonoBehaviour
     public static CameraController instance;
     public float mouseSensitivity = 3.5f;
 
+    private float CamX = 0;
+    private float CamY = 0;
+    private float refX;
+    private float refY;
     private Vector3 CamOffset;
+    public Slider camOffest;
     private void Start()
     {
         instance = this;
@@ -67,11 +71,24 @@ public class CameraController : MonoBehaviour
         if (Input.GetMouseButton(1))
         {
             float x = Input.GetAxis("Mouse X");
+            CamX = (CamX + x)/2;
             float y = -Input.GetAxis("Mouse Y");
+            CamY = (CamY + y)/2;
             camParent.RotateAround(camParent.position, camParent.up, x * mouseSensitivity);
-
             camParent.RotateAround(camParent.position, camParent.right, y * mouseSensitivity);
-
+        }
+        else
+        {
+            if (CamX != 0)
+            {
+                CamX = Mathf.SmoothDamp(CamX, 0, ref refX, 0.5f);
+                camParent.RotateAround(camParent.position, camParent.up, CamX * mouseSensitivity) ;
+            }
+            if (CamY != 0)
+            {
+                CamY = Mathf.SmoothDamp(CamY, 0, ref refY, 0.5f);
+                camParent.RotateAround(camParent.position, camParent.right, CamY * mouseSensitivity);
+            }
         }
     }
 
